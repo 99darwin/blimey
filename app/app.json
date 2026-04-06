@@ -1,0 +1,47 @@
+{
+  "expo": {
+    "name": "Blimey",
+    "slug": "blimey",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "blimey",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash.png",
+      "backgroundColor": "#FAFAFA",
+      "resizeMode": "contain"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.blimey.blimey",
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "Blimey needs microphone access to translate your speech between British and American English.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "plugins": [
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Blimey needs microphone access to translate your speech between British and American English."
+        }
+      ],
+      "expo-router",
+      "expo-asset"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "backgroundColor": "#FAFAFA",
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "c248b4bc-273c-4174-be74-395d81a205a2"
+      }
+    }
+  }
+}
