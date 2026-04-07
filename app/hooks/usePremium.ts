@@ -5,7 +5,7 @@ import { useSettingsStore } from '@/stores/settingsStore';
 
 interface UsePremiumReturn {
   isPremium: boolean;
-  purchasePremium: (productId: 'monthly' | 'lifetime') => Promise<void>;
+  purchasePremium: (productId: 'monthly' | 'lifetime') => Promise<boolean>;
   restorePurchases: () => Promise<void>;
 }
 
@@ -19,7 +19,7 @@ export function usePremium(): UsePremiumReturn {
   const setPremium = useSettingsStore((s) => s.setPremium);
 
   const purchasePremium = useCallback(
-    async (productId: 'monthly' | 'lifetime') => {
+    async (productId: 'monthly' | 'lifetime'): Promise<boolean> => {
       try {
         const offerings = await Purchases.getOfferings();
         const offering = offerings.all[OFFERING_IDS[productId]];
@@ -27,18 +27,20 @@ export function usePremium(): UsePremiumReturn {
 
         if (!pkg) {
           Alert.alert('Unavailable', 'This product is not available right now.');
-          return;
+          return false;
         }
 
-        const { customerInfo } = await Purchases.purchasePackage(pkg);
-
-        if (customerInfo.entitlements.active['pro']) {
-          setPremium(true);
-        }
+        // If purchasePackage resolves without throwing, the transaction succeeded.
+        // Trust it and unlock immediately — RC's entitlements payload can lag,
+        // and the customer info listener will reconcile any drift on the next update.
+        await Purchases.purchasePackage(pkg);
+        setPremium(true);
+        return true;
       } catch (err: unknown) {
         const error = err as { userCancelled?: boolean; message?: string };
-        if (error.userCancelled) return;
+        if (error.userCancelled) return false;
         Alert.alert('Purchase Failed', error.message ?? 'Please try again.');
+        return false;
       }
     },
     [setPremium],

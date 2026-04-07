@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { ScrollView, Pressable, Text, StyleSheet, View } from 'react-native';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { COLORS, SPACING, BORDER_RADIUS, SHADOWS, UK_DIALECTS, US_DIALECTS } from '@/utils/constants';
@@ -13,7 +14,15 @@ export function DialectPicker({ onLockedDialectPress }: DialectPickerProps) {
   const isPremium = useSettingsStore((s) => s.isPremium);
   const setDialect = useSettingsStore((s) => s.setDialect);
 
-  const dialects = direction === 'UK_TO_US' ? UK_DIALECTS : US_DIALECTS;
+  // Show dialects for the TARGET side — you're choosing what to translate INTO.
+  const dialects = direction === 'UK_TO_US' ? US_DIALECTS : UK_DIALECTS;
+
+  // Reset to General if persisted dialect doesn't belong to the current target side.
+  useEffect(() => {
+    if (!(dialects as readonly Dialect[]).includes(dialect)) {
+      setDialect('General');
+    }
+  }, [dialects, dialect, setDialect]);
 
   const handlePress = (d: Dialect) => {
     if (d !== 'General' && !isPremium) {

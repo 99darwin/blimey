@@ -45,7 +45,7 @@ export default function HomeScreen() {
 
   const { isRecording, startRecording, stopRecording } = useAudioRecording();
   const { showPaywall, dismissPaywall, handleRateLimitError } = useRateLimit();
-  const { purchasePremium } = usePremium();
+  const { purchasePremium, restorePurchases } = usePremium();
 
   const handleTranslateFlow = useCallback(
     async (text: string) => {
@@ -226,6 +226,7 @@ export default function HomeScreen() {
         visible={showPaywall}
         onDismiss={dismissPaywall}
         onPurchase={purchasePremium}
+        onRestore={restorePurchases}
       />
     </SafeAreaView>
   );

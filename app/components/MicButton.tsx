@@ -1,10 +1,12 @@
 import { useEffect, useRef, useCallback } from 'react';
 import {
   Animated,
+  Easing,
   Pressable,
   ActivityIndicator,
   StyleSheet,
   Text,
+  View,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { COLORS, SHADOWS, SPACING } from '@/utils/constants';
@@ -23,6 +25,7 @@ export function MicButton({
   isProcessing,
 }: MicButtonProps) {
   const colorAnim = useRef(new Animated.Value(0)).current;
+  const pulseAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.timing(colorAnim, {
@@ -32,9 +35,36 @@ export function MicButton({
     }).start();
   }, [isRecording, colorAnim]);
 
+  useEffect(() => {
+    if (!isRecording) {
+      pulseAnim.stopAnimation();
+      pulseAnim.setValue(0);
+      return;
+    }
+    const loop = Animated.loop(
+      Animated.timing(pulseAnim, {
+        toValue: 1,
+        duration: 1400,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      }),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [isRecording, pulseAnim]);
+
   const backgroundColor = colorAnim.interpolate({
     inputRange: [0, 1],
     outputRange: [COLORS.navy, COLORS.red],
+  });
+
+  const pulseScale = pulseAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 1.8],
+  });
+  const pulseOpacity = pulseAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.5, 0],
   });
 
   const label = isProcessing
@@ -63,6 +93,19 @@ export function MicButton({
       accessibilityState={{ disabled: isProcessing, busy: isProcessing || isRecording }}
       style={styles.wrapper}
     >
+      <View style={styles.buttonContainer}>
+        {isRecording && (
+          <Animated.View
+            pointerEvents="none"
+            style={[
+              styles.pulse,
+              {
+                opacity: pulseOpacity,
+                transform: [{ scale: pulseScale }],
+              },
+            ]}
+          />
+        )}
       <Animated.View style={[styles.button, { backgroundColor }]}>
         {isProcessing ? (
           <ActivityIndicator size="large" color={COLORS.white} />
@@ -70,6 +113,7 @@ export function MicButton({
           <Text style={styles.icon}>{isRecording ? '...' : '\uD83C\uDFA4'}</Text>
         )}
       </Animated.View>
+      </View>
       <Text style={styles.label}>{label}</Text>
     </Pressable>
   );
@@ -80,6 +124,19 @@ const BUTTON_SIZE = 80;
 const styles = StyleSheet.create({
   wrapper: {
     alignItems: 'center',
+  },
+  buttonContainer: {
+    width: BUTTON_SIZE,
+    height: BUTTON_SIZE,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pulse: {
+    position: 'absolute',
+    width: BUTTON_SIZE,
+    height: BUTTON_SIZE,
+    borderRadius: BUTTON_SIZE / 2,
+    backgroundColor: COLORS.mutedGray,
   },
   button: {
     width: BUTTON_SIZE,

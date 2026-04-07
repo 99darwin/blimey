@@ -42,6 +42,18 @@
       "eas": {
         "projectId": "c248b4bc-273c-4174-be74-395d81a205a2"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/c248b4bc-273c-4174-be74-395d81a205a2"
+    },
+    "android": {
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ]
     }
   }
 }

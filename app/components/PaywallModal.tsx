@@ -4,7 +4,8 @@ import { COLORS, SPACING, BORDER_RADIUS } from '@/utils/constants';
 interface PaywallModalProps {
   visible: boolean;
   onDismiss: () => void;
-  onPurchase: (productId: 'monthly' | 'lifetime') => void;
+  onPurchase: (productId: 'monthly' | 'lifetime') => Promise<boolean> | void;
+  onRestore: () => Promise<void> | void;
 }
 
 const BENEFITS = [
@@ -18,7 +19,13 @@ export function PaywallModal({
   visible,
   onDismiss,
   onPurchase,
+  onRestore,
 }: PaywallModalProps) {
+  const handlePurchase = async (productId: 'monthly' | 'lifetime') => {
+    const result = await onPurchase(productId);
+    if (result) onDismiss();
+  };
+
   return (
     <Modal
       visible={visible}
@@ -52,18 +59,18 @@ export function PaywallModal({
           </View>
 
           <Pressable
-            onPress={() => onPurchase('lifetime')}
+            onPress={() => handlePurchase('lifetime')}
             style={styles.primaryCta}
             accessibilityRole="button"
-            accessibilityLabel="Get Blimey Pro for 3 dollars 99 cents, one-time purchase"
+            accessibilityLabel="Get Blimey Pro for 9 dollars 99 cents, one-time purchase"
           >
             <Text style={styles.primaryCtaText}>
-              Get Blimey Pro — $3.99 lifetime
+              Get Blimey Pro — $9.99 lifetime
             </Text>
           </Pressable>
 
           <Pressable
-            onPress={() => onPurchase('monthly')}
+            onPress={() => handlePurchase('monthly')}
             style={styles.secondaryCta}
             accessibilityRole="button"
             accessibilityLabel="Subscribe to Blimey Pro for 1 dollar 99 cents per month"
@@ -73,14 +80,25 @@ export function PaywallModal({
             </Text>
           </Pressable>
 
-          <Pressable
-            onPress={onDismiss}
-            style={styles.dismissLink}
-            accessibilityRole="button"
-            accessibilityLabel="Dismiss"
-          >
-            <Text style={styles.dismissText}>Maybe later</Text>
-          </Pressable>
+          <View style={styles.footerRow}>
+            <Pressable
+              onPress={onRestore}
+              style={styles.footerLink}
+              accessibilityRole="button"
+              accessibilityLabel="Restore previous purchases"
+            >
+              <Text style={styles.footerLinkText}>Restore Purchases</Text>
+            </Pressable>
+            <Text style={styles.footerDivider}>·</Text>
+            <Pressable
+              onPress={onDismiss}
+              style={styles.footerLink}
+              accessibilityRole="button"
+              accessibilityLabel="Dismiss"
+            >
+              <Text style={styles.footerLinkText}>Maybe later</Text>
+            </Pressable>
+          </View>
         </View>
       </Pressable>
     </Modal>
@@ -171,11 +189,22 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
   },
-  dismissLink: {
+  footerRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: SPACING / 2,
+    gap: SPACING,
   },
-  dismissText: {
+  footerLink: {
+    paddingVertical: SPACING / 2,
+    paddingHorizontal: SPACING / 2,
+  },
+  footerLinkText: {
+    color: COLORS.mutedGray,
+    fontSize: 13,
+  },
+  footerDivider: {
     color: COLORS.mutedGray,
     fontSize: 13,
   },
